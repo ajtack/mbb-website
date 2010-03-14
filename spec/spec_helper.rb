@@ -3,11 +3,15 @@ require File.expand_path(File.join(File.dirname(__FILE__), '..', 'config', 'envi
 require 'spec/autorun'
 require 'spec/rails'
 require 'authlogic/test_case'
+require 'email_spec'
 
 Spec::Runner.configure do |config|
 	config.use_transactional_fixtures = true
 	config.use_instantiated_fixtures	= false
 	config.fixture_path = RAILS_ROOT + '/spec/fixtures/'
+	
+	config.include(EmailSpec::Helpers)
+	config.include(EmailSpec::Matchers)
 	
 	# Require all of our custom matchers
 	(Dir.entries(File.join(File.dirname(__FILE__), 'matchers')) - ['.', '..']).each do |filename|

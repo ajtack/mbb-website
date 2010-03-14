@@ -15,4 +15,5 @@ Rails::Initializer.run do |config|
 	config.gem 'RedCloth', :version => '>= 4.0'
 	
 	config.active_record.observers = :member_observer
+	config.action_mailer.default_url_options = { :host => "madisonbrass.com" }
 end

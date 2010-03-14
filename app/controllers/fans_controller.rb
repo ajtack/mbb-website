@@ -16,6 +16,7 @@ class FansController < ApplicationController
 		
 		respond_to do |format|
 			if @fan.save || (@fan.errors.length == 1 and @fan.errors.on(:email) == I18n.translate('activerecord.errors.messages.taken'))
+				FanMailer.deliver_welcome(@fan)
 				flash[:notice] = 'Thanks for signing up! Hope to see you at our next concert.'
 				format.html { redirect_to(news_items_url) }
 			else

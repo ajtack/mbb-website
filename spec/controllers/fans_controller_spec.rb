@@ -8,7 +8,8 @@ describe FansController do
 	describe "#create" do
 		context "with valid params" do
 			before :each do
-				Fan.stub!(:new).and_return(mock_model(Fan, :save => true))
+				@fan = Factory.build(:fan)
+				Fan.stub!(:new).and_return(@fan)
 			end
 			
 			it 'should redirect back to the news section' do
@@ -20,13 +21,18 @@ describe FansController do
 				post :create, :fan => {}
 				flash[:notice].should =~ /thanks|thank you/i
 			end
+			
+			it 'should send an e-mail to the user' do
+				FanMailer.should_receive(:deliver_welcome).with(@fan)
+				post :create, :fan => {}
+			end
 		end
 		
 		context 'when re-registering a fan (non-unique e-mail)' do
 			before :each do
 				existing_fan = Factory.create(:fan)
-				another_fan = Factory.build(:fan, :email => existing_fan.email)
-				Fan.stub!(:new).and_return(another_fan)
+				@new_fan = Factory.build(:fan, :email => existing_fan.email)
+				Fan.stub!(:new).and_return(@new_fan)
 			end
 			
 			it 'should redirect back to the news section' do
