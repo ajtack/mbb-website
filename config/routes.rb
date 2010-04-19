@@ -7,7 +7,7 @@ ActionController::Routing::Routes.draw do |map|
 		about.overview 'about/overview.:format', :action => 'overview'
 		about.director 'about/director.:format', :action => 'director'
 		about.history 'about/history.:format', :action => 'history'
-		about.bylaws 'about/bylaws.:format', :action => 'bylaws'
+		about.bylaws 'about/rules-and-bylaws.:format', :action => 'rules-and-bylaws'
 		about.contacts 'about/contacts.:format', :action => 'contacts'
 		about.what_is_a_brass_band 'about/brass-banding.:format', :action => 'brass-banding'
 	end

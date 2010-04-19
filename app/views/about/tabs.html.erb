@@ -1,0 +1,24 @@
+<h1>About the Band</h1>
+
+<div id="LeftBanner"></div>
+<div id="AboutSections" class="ui-tabs ui-widget ui-tabs-vertical ui-helper-clearfix">
+	<ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+	<%
+		unless controller.action_name == 'index'
+			rendered_tab = controller.action_name
+		else
+			rendered_tab = 'overview'
+		end
+		
+		@Tabs.each do |tab|
+			classes = 'ui-state-default ui-corner-left'
+			classes += ' ui-tabs-selected ui-state-active' if tab[:path] == "/about/#{rendered_tab}" -%>
+			<li class="<%= classes -%>">
+				<%= link_to tab[:title], tab[:path], :title => 'Content' %>
+			</li>
+		<% end -%>
+	</ul>
+	<div id="Content" class="ui-widget-content">
+		<%= render :file => "about/#{rendered_tab}" %>
+	</div>
+</div>

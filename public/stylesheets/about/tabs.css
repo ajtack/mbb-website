@@ -1,14 +1,24 @@
+@import url(/stylesheets/jquery-blitzer.css);
+
 /* Vertical Tabs */
 .ui-tabs-vertical { width: 55em; }
-.ui-tabs-vertical .ui-tabs-nav { padding: .2em .1em .2em .2em; float: left; width: 12em; }
+.ui-tabs-vertical .ui-tabs-nav { padding: 0.2em .1em .2em .2em; float: left; width: 12em; }
 .ui-tabs-vertical .ui-tabs-nav li { clear: left; width: 100%; border-bottom-width: 1px !important; border-right-width: 0 !important; margin: 0 -1px .2em 0; }
 .ui-tabs-vertical .ui-tabs-nav li a { display:block; }
 .ui-tabs-vertical .ui-tabs-nav li.ui-tabs-selected { padding-bottom: 0; padding-right: .1em; border-right-width: 1px; border-right-width: 1px; }
 .ui-tabs-vertical .ui-tabs-panel { padding: 1em; float: right; width: 40em;}
 
-#InformationAccordion {
-	float: left;
-	width: 85%;
+#AboutSections {
+	width: 100%;
+}
+
+#AboutSections #Content {
+	padding: 1em;
+}
+
+#AboutSections #Content h1 {
+	font-size: 18pt;
+	color: #a30000;
 }
 
 #PageHeaderWithPhoto	{
@@ -17,7 +27,15 @@
 }
 
 #PageHeaderWithPhoto h1	{
+	font-size: 32pt;
+	color: black;
+	
 	padding-top: 40px;
+	white-space:nowrap;
+}
+
+#PageHeaderWithPhoto h2 {
+	white-space:nowrap;
 }
 
 #PageHeaderWithPhoto img#CraigMasonPicture	{
@@ -25,10 +43,6 @@
 	margin: auto;
 	float: left;
 	padding: 15px;
-}
-
-p	{
-	clear: both;
 }
 
 #OriginalBand	{
@@ -44,15 +58,4 @@ p	{
 	width: 70%;
 	text-align: center;
 	font-style: oblique;
-}
-
-#InformationAccordion h2 {
-	border: 1px solid #333;
-	border-radius: 5px;
-}
-
-#InformationAccordion > div {
-	width: 90%;
-	margin: auto;
-	margin-bottom: 5em;
 }
