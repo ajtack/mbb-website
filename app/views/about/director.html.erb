@@ -1,5 +1,4 @@
-<%= render :partial => "menu" %>
-<% @craig = Member.find_by_name('Craig Mason') -%>
+<% @craig = Section.find_by_name('Musical Director').members.first -%>
 
 <div id="PageHeaderWithPhoto">
 	<%= image_tag @craig.photo.url(:headshot), :id => 'CraigMasonPicture', :alt => "Picture of #{@craig}" %>

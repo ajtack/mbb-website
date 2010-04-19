@@ -1,5 +1,12 @@
 class AboutController < ApplicationController
-	def index
-		redirect_to :controller => 'about', :action => 'history'
-	end
+	layout :render_without_layout_for_ajax
+	
+	private
+		def render_without_layout_for_ajax
+			if request.format.js?
+				false
+			else
+				'application'
+			end
+		end
 end

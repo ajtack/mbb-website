@@ -4,9 +4,12 @@ ActionController::Routing::Routes.draw do |map|
 	# Main site links
 	map.with_options :controller => 'about' do |about|
 		about.about 'about', :action => 'index'
-		about.about_director 'about/director', :action => 'director'
-		about.history 'about/history', :action => 'history'
-		about.about_bylaws 'about/bylaws', :action => 'bylaws'
+		about.overview 'about/overview.:format', :action => 'overview'
+		about.director 'about/director.:format', :action => 'director'
+		about.history 'about/history.:format', :action => 'history'
+		about.bylaws 'about/bylaws.:format', :action => 'bylaws'
+		about.contacts 'about/contacts.:format', :action => 'contacts'
+		about.what_is_a_brass_band 'about/brass-banding.:format', :action => 'brass-banding'
 	end
 	map.resources :news_items, :as => 'news', :only => [:index]
 	map.book 'book', :controller => 'book'
