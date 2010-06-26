@@ -55,7 +55,7 @@ class Member < ActiveRecord::Base
 		old_section = self.section
 		
 		unless self.new_record? || old_section.nil?
-			new_section = if new_section_object.new_record? then new_section_object else Section.find(new_section_object) end
+			new_section = new_section_object
 			self.remove_from_list unless old_section.nil?
 			self.raw_section = new_section
 			
@@ -88,12 +88,6 @@ class Member < ActiveRecord::Base
 		super(:except => [:crypted_password, :salt, :perishable_token,
 		                 :persistence_token, :remember_token, :remember_token_expires_at,
 		                 :photo_file_name, :photo_file_size, :photo_content_type])
-	end
-	
-	def has_role?(role_in_question)
-		@_list ||= self.roles.collect(&:name)
-		return true if @_list.include?("admin")
-		(@_list.include?(role_in_question.to_s) )
 	end
 	
 	def self.default_password

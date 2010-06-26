@@ -1,8 +1,13 @@
 <li>
 	<h2><%= section.name -%></h2>
-	<table class="section" id="Section<%= section.id -%>">
-		<tbody>
-			<%= render :partial => 'member', :collection => section.members %>
-		</tbody>
-	</table>
+	<ul class="section" id="section_<%= section.id -%>">
+		<%= render :partial => 'member', :collection => section.members %>
+	</ul>
+	<% if current_user.privileged? -%>
+		<div class="under_section_button">
+			<% link_to new_member_path, :class => 'fg-button fg-button-icon-left ui-state-default ui-corner-all' do -%>
+				<span class="ui-icon ui-icon-circle-plus"></span>Add Another Player
+			<% end %>
+		</div>
+	<% end -%>
 </li>

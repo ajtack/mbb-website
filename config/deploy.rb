@@ -7,17 +7,19 @@ require 'capistrano/ext/multistage'
 # Sets up to use Darren's server at madisonbrass.com for deployment.
 task :use_madisonbrass do
 	set :user, 'madison'
-	set :server_hostname, '585mad.albertus.hostingrails.com'
+	set :server_hostname, 'madisonbrass.com'
 	set :deploy_to, "/home/#{user}/sites/#{domain}"
 	role :app, server_hostname
 	role :web, server_hostname
 	role :db,	server_hostname, :primary => true
+	
+	# This is necessary, else RVM doesn't initialize as expected.
+	default_run_options[:shell] = false
 end
 
 # Point to the code repository wherefrom to get the stuff.
 set :scm, 'git'
-set :repository, 'git://github.com/ajtack/mbb.git'
-ssh_options[:forward_agent] = true
+set :repository, 'git://github.com/mbb/mbb-website.git'
 set :git_shallow_clone, 1
 set :git_enable_submodules, 1
 set :use_sudo, false
@@ -52,9 +54,10 @@ end
 #				break things.
 #
 after 'deploy', 'deploy:cleanup'
-before 'deploy:migrate', 'deploy:link_db_config'
-before 'deploy:load_schema', 'deploy:link_db_config'
-after "deploy:update_code", "deploy:copy_assets"
+before 'deploy:migrate', 'host:link_db_config'
+before 'deploy:load_schema', 'host:link_db_config'
+after "deploy:update_code", "host:copy_assets"
+after 'deploy:update_code', 'host:rvm:configure'
 
 #
 # New and overridden task definitions follow.
@@ -85,7 +88,7 @@ namespace :deploy do
 	task :restart do
 		find_and_execute_task('passenger:restart')
 	end
-
+	
 	[:start, :stop].each do |t|
 		desc "#{t} task is a no-op with Passenger."
 		task t, :roles => :app do ; end
@@ -94,7 +97,14 @@ end
 
 # Custom tasks, written to deploy this particular application correctly.
 namespace :deploy do
+	desc 'Skips migrations if this is a cold deployment'
+	task :load_schema, :roles => :app do
+		run "cd #{current_path}; rake db:schema:load"
+		run "cd #{current_path}; rake db:defaults:load"
+	end
+end
 
+namespace :host do
 	desc 'Copies the uploads directory from the previous deployment'
 	task :copy_assets do
 		previous_assets = "#{previous_release}/public/assets"
@@ -108,11 +118,10 @@ namespace :deploy do
 		run "ln -nfs #{deploy_to}/shared/config/database.yml #{release_path}/config/database.yml"
 	end
 	
-	desc 'Skips migrations if this is a cold deployment'
-	task :load_schema, :roles => :app do
-		run "cd #{current_path}; rake db:schema:load"
-		run "cd #{current_path}; rake db:defaults:load"
+	namespace :rvm do
+		desc 'Links necessary RVM configuration files to the target deployment.'
+		task :configure, :roles => :app do
+			run "ln -nfs #{deploy_to}/shared/.rvmrc #{release_path}/.rvmrc"
+		end
 	end
-	
-	desc 'Copies the entire production environment'
 end
