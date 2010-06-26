@@ -8,6 +8,7 @@ describe Member do
 	it { should have_db_column(:name) }
 	it { should have_db_column(:email) }
 	it { should have_db_column(:biography) }
+	it { should respond_to(:privileged?) }
 	it { should validate_presence_of(:section) }
 	it { should validate_presence_of(:name) }
 	it { should validate_presence_of(:email) }
@@ -15,6 +16,14 @@ describe Member do
 	it { should_not validate_presence_of(:password) }
 	it { should_not validate_presence_of(:password_confirmation) }
 	it { should_not validate_presence_of(:biography) }
+	
+	#
+	# Default values assumed by the application.
+	#
+	it 'should assume that members are unprivileged, by default' do
+		member = Factory.create(:member, :privileged => nil)
+		member.should_not be_privileged
+	end
 	
 	#
 	# Verify format of phone number
@@ -133,6 +142,30 @@ describe Member do
 					moving_member.lower_item.should == first_low_member
 				end
 			end
+		end
+	end
+	
+	it { should respond_to(:neighbors) }
+	context 'in a nonempty section' do
+		before :each do
+			@the_section = Factory(:section)
+			@top_member    = Factory(:member, :section => @the_section)
+			@this_member   = Factory(:member, :section => @the_section)
+			@bottom_member = Factory(:member, :section => @the_section)
+		end
+		
+		it 'should list only one neighbor when he is the first in the section' do
+			@this_member.move_to_top
+			@this_member.neighbors.should == [@top_member]
+		end
+		
+		it 'should only list one neighbor when he is the last in the section' do
+			@this_member.move_to_bottom
+			@this_member.neighbors.should == [@bottom_member]
+		end
+		
+		it 'should list two neighbors in order when he is inbetween them in the section' do
+			@this_member.neighbors.should == [@top_member, @bottom_member]
 		end
 	end
 end

@@ -5,9 +5,9 @@ describe Private::RostersController do
   
 	it { should route(:get, '/private/roster').to(:controller => 'private/rosters', :action => :show) }
 
-	context 'when logged in as a roster adjuster' do
-		fixtures :members, :sections, :roles
-		before :each do login({}, {:roles => [roles(:roster_adjustment)]}) end
+	context 'when logged in as a privileged member' do
+		fixtures :members, :sections
+		before :each do login({}, {:privileged => true}) end
 			
 		describe 'the show action' do
 			before :each do get :show end
@@ -18,6 +18,19 @@ describe Private::RostersController do
 
 			it 'should populate @sections with the full member list' do
 				assigns(:sections).should eql(Section.all)
+			end
+		end
+	end
+	
+	context 'when logged in as a regular member' do
+		before :each do
+			login({}, {:privileged => false})
+		end
+		
+		describe 'the show action' do
+			it 'should load successfully' do
+				get :show
+				response.should be_success
 			end
 		end
 	end

@@ -1,17 +1,20 @@
-<tr id="member_<%= member.id -%>">
-	<td class="operations">
-		<%= render :partial => 'private/rosters/operations', :locals => {:member => member} %>
-	</td>
+<li style="display: inline-block; width: 100%" class="member" id="member_<%= member.id -%>">
+	<div class="operations">
+		<% if current_user.privileged? -%>
+			<%= render :partial => 'private/rosters/operations', :locals => {:member => member} %>
+		<% else -%>
+			&nbsp;
+		<% end %>
+	</div>
 	
-	<td class="photo"><%= image_tag member.photo.url(:tiny), :alt => "Picture of #{member}." %></td>
-	<td class="name"><%= member.name -%></td>
-	<td class="contact">
+	<% link_to member_path(member) do -%><% end %>
+	<div class="photo"><%= image_tag member.photo.url(:tiny), :alt => "Picture of #{member}." %></div>
+	<div class="name_column">
+		<span class="name"><%= member.name -%></span><br />
+		<span class="hint">Drag to re-seat.</span>
+	</div>
+	<div class="contact">
 		<%= member.email -%><br />
 		<%= member.pretty_phone_number %>
-	</td>
-	<td class="section">
-		<% form_for member.section, :url => member_section_url(member), :html => {:class => 'member_section_selector'} do |f| -%>
-			<%= f.select :id, Section.all.collect {|s| [s.name, s.id] } %>
-		<% end -%>
-	</td>
-</tr>
+	</div>
+</li>

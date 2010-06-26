@@ -1,7 +1,13 @@
 ul#Sections	{
 	margin: 0;
 	list-style: none;
+	padding-left: 0;
 	width: 700px;
+}
+
+ul#Sections ul {
+	list-style: none;
+	padding-left: 0;
 }
 
 ul#Sections li h2	{
@@ -11,26 +17,68 @@ ul#Sections li h2	{
 	border-bottom: 1px solid black;
 }
 
-table.section	{
-	width: 100%;
+ul.section	{
+	min-height: 1em;
+	margin-top: 1em;
 }
 
-table.section td.operations {  width: 48px;   } /* 3 knobs @ 16px */
-table.section td.photo      {  width: 50px;   } /* Member "tiny" photo class width. */
-table.section td.name       {  width: 200px;  }
-table.section td.contact    {  width: 252px;  } /* 2px extra to round out td.operations */
-table.section td.section    {  width: 150px;  }
+ul.section li.member {
+	clear: both;
+}
 
+ul.section li.member:hover {
+	background-color: #eee;
+}
 
-ul.operations li	{
+ul.section li.member div {
 	float: left;
 }
 
-ul.operations li .operation	{
-	width: 16px;
-	height: 16px;
+/* Layout of each member's row. */
+ul.section div.operations   {  width: 15%;   } /* 3 knobs @ 16px + whatever the browser wants. */
+ul.section div.photo        {  width: 10%;   } /* Member "tiny" photo class width. */
+ul.section div.name_column  {  width: 40%;   }
+ul.section div.contact      {  width: 35%;   } /* 1px extra to round out td.operations in Chrome. */
+
+/* Layout of individual cells in a member row. */
+ul.section li.member .operations   {  padding: 0; text-align: center; }
+ul.section li.member .operations ul { float: left; }
+ul.section li.member .operations ul li { display: list-item; }
+ul.section li.member .operations ul li div { float: none; }
+
+ul.section li.member .hint { visibility: hidden; }  /* If the client supports Javascript, that code will reveal the hints. */
+
+.operation { margin: 3px; }
+
+div.operations ul {
+	width: 50px;
 }
 
-.operation *	{
-	border: none;
+.wordless-operation {
+	width: 16px;
+	height: 16px;
+	padding: 0;
+	padding-left: 5px;
 }
+
+.updown-buttons {
+	font-size: 6pt;
+	width: 25px;
+	float: left;
+	height: 53px;
+	position: relative;
+	top: 4px;
+}
+
+.under_section_button {
+	margin: 1em;
+	margin-top: 0.5em;
+	margin-left: 51px;
+	clear: both;
+}
+
+/*
+ * Sorting Sections
+ */
+.ui-sortable-placeholder { border: 1px dotted black; visibility: visible !important; height: 50px !important; }
+.ui-sortable-placeholder * { visibility: hidden; }

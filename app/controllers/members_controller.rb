@@ -1,8 +1,7 @@
 class MembersController < ApplicationController	
 	before_filter :require_user, :except => [:index, :show]
-	before_filter :check_credentials, :only => [:edit, :update]
+	before_filter :require_member_edit_credentials, :only => [:edit, :update, :new, :create, :destroy, :move_up, :move_down]
 	before_filter :update_identifier, :only => [:show, :edit]
-	require_role 'Roster Adjustment', :only => [:new, :create, :destroy, :move_up, :move_down]
 	
 	# GET /members
 	# GET /members.xml
@@ -34,7 +33,7 @@ class MembersController < ApplicationController
 	# GET /private/members/new
 	# GET /private/members/new.xml
 	def new
-		@member = Member.new
+		@member = Member.new(params[:member])
 		
 		respond_to do |format|
 			format.html # new.html.erb
@@ -76,40 +75,59 @@ class MembersController < ApplicationController
 	end
 
 	# PUT /private/members/john-smith
-	# PUT /private/members/john-smith.xml
+	# PUT /private/members/john-smith.json
 	def update
 		@member = Member.find(params[:id])
 		
+		# Update the member's section, if sent.
 		if params[:member].has_key?(:section_id) and @member.section_id != params[:member][:section_id]
-			# Change the member's section.
-			old_section = @member.section
-			new_section = Section.find(params[:member][:section_id])
-			@member.remove_from_list
-			@member.section = new_section
-			
-			# Place the member somewhere in the order within the new section. This must
-			# be done explicitly to avoid using the position from the old section (which
-			# will probably be invalid or duplicate another member's position).
-			if new_section.position < old_section.position and new_section.members.count > 0
-				@member.insert_at(new_section.members.last.position + 1) # Move up to "bottom" of higher section
-			else
-				@member.insert_at(1)
+			# Don't allow unprivileged members to do this!
+			unless current_user.privileged?
+				render 'members/show', :status => :forbidden
+				return
 			end
 			
-			# Update the rest of the attributes.
-			other_attributes = params[:member].delete_if { |attribute_name, _| attribute_name == :section }
-			@member.update_attributes(other_attributes)
-		else
-			# No section changes mean we can mass-update.
-			@member.update_attributes(params[:member])
+			# Change the member's section.
+			new_section = Section.find(params[:member][:section_id])
+			params[:member].delete(:section_id)
+			params[:member][:section] = new_section
+		end
+		
+		# Update the position within the section, if sent.
+		if params[:member].has_key?(:position)
+			if params[:member][:position] =~ /^\d+$/
+				replaced_member = Member.find(params[:member][:position])
+				@new_position = replaced_member.position
+				params[:member].delete(:position)
+			else
+				@new_section = params[:member][:section] || @member.section
+				if @new_section.members.empty?
+					@new_position = 1
+				else
+					@new_position = @new_section.members.last.position + 1
+				end
+				
+				params[:member].delete(:position)
+			end
+		end
+		
+		# Do not allow permissions changes by unprivileged members.
+		if params[:member].has_key?(:privileged) and not current_user.privileged?
+			render 'members/show', :status => :forbidden
+			return
 		end
 		
 		respond_to do |wants|
 			if @member.update_attributes(params[:member])
-				flash[:notice] = 'Member was successfully updated.'
-				wants.html { redirect_back_or_default(member_path(@member)) }
+				@member.insert_at(@new_position) unless @new_position.nil?
+				wants.html do
+					flash[:notice] = 'Member was successfully updated.'
+					redirect_back_or_default(member_path(@member))
+				end
+				wants.json { head :ok }
 			else
-				wants.html { render :action => "edit" }
+				wants.html { render :action => "edit", :status => :bad_request }
+				wants.json { head :bad_request }
 			end
 		end
 	end
@@ -120,7 +138,11 @@ class MembersController < ApplicationController
 		old_position = @member.position
 		@member.move_higher
 		@position_changed = (old_position != @member.reload.position)
-		render 'private/rosters/move_up'
+		
+		respond_to do |wants|
+			wants.html { redirect_to private_roster_url }
+			wants.js   { render 'private/rosters/move_up' }
+		end
 	end
 	
 	# PUT /private/members/Quentin_Daniels/move_down (rjs)
@@ -129,20 +151,14 @@ class MembersController < ApplicationController
 		old_position = @member.position
 		@member.move_lower
 		@position_changed = (old_position != @member.reload.position)
-		render 'private/rosters/move_down'
+		
+		respond_to do |wants|
+			wants.html { redirect_to private_roster_url }
+			wants.js   { render 'private/rosters/move_down' }
+		end
 	end
 	
 	private
-		def check_credentials
-			unless current_user.has_role?('Roster Adjustment') or params[:id] == current_user.to_param
-				flash[:error] = "You do not have permission to #{action_name} another member."
-				render private_roster_path, :status => :forbidden
-				false
-			else
-				true
-			end
-		end
-		
 		def update_identifier
 			if MembersHelper.bad_identifier?(params[:id])
 				new_params = MembersHelper.update_identifier(params)

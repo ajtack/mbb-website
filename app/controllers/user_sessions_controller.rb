@@ -11,7 +11,7 @@ class UserSessionsController < ApplicationController
 		@user_session = UserSession.new(params[:user_session])
 		if @user_session.save
 			flash[:notice] = 'Logged in successfully!'
-			redirect_back_or_default member_path(UserSession.find.member)
+			redirect_back_or_default private_news_items_path
 		else
 			note_failed_signin
 			render :action => :new
@@ -28,7 +28,6 @@ class UserSessionsController < ApplicationController
 protected
 	# Track failed login attempts
 	def note_failed_signin
-		flash[:error] = "Couldn't log you in as '#{params[:email]}'"
 		logger.warn "Failed login for '#{params[:email]}' from #{request.remote_ip} at #{Time.now.utc}"
 	end
 end

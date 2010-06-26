@@ -46,12 +46,16 @@ class Member < ActiveRecord::Base
 	validates_format_of      :phone_number, :with => ThreeDegrees::Regex::phone_number, :allow_blank => true
 	validates_presence_of    :section
 	
+	def neighbors(load_eagerly = false)
+		[higher_item, lower_item].compact
+	end
+	
 	alias_method :raw_section=, :section=
 	def section=(new_section_object)
 		old_section = self.section
 		
 		unless self.new_record? || old_section.nil?
-			new_section = if new_section_object.new_record? then new_section_object else Section.find(new_section_object) end
+			new_section = new_section_object
 			self.remove_from_list unless old_section.nil?
 			self.raw_section = new_section
 			
@@ -84,17 +88,6 @@ class Member < ActiveRecord::Base
 		super(:except => [:crypted_password, :salt, :perishable_token,
 		                 :persistence_token, :remember_token, :remember_token_expires_at,
 		                 :photo_file_name, :photo_file_size, :photo_content_type])
-	end
-	
-	# prevents a user from submitting a crafted form that bypasses activation
-	# anything else you want your user to change should be added here.
-	attr_accessible :email, :name, :password, :password_confirmation, :section, :section_id,
-		:roles, :updated_at, :created_at, :photo, :biography, :phone_number
-	
-	def has_role?(role_in_question)
-		@_list ||= self.roles.collect(&:name)
-		return true if @_list.include?("admin")
-		(@_list.include?(role_in_question.to_s) )
 	end
 	
 	def self.default_password
