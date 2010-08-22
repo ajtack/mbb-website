@@ -1,104 +1,72 @@
 module NavigationHelpers
-	def path_to(page_name)
-		case page_name
-		when ResourceExpr
-			template_for($1, $2)
-		when ActionOnResourceExpr
-			action_path_for($1, $2, Member.to_pc($3))
-		when TheSomethingPageExpr
-			case $1
-			when /home/
-				root_path
-			when /booking/
-				book_path
-			when /next concert/
-				next_concerts_path
-			when /upcoming concerts/
-			  upcoming_concerts_path
-			when /private member list/
-				private_roster_path
-			when /create-new-member/
-				new_member_path
-			when /login/
-				login_path
-			else
-				request = recognized_request_for(path, :get)
-				unless request.nil?
-					page_name
-				else
-					raise "Can't find mapping from \"#{page_name}\" to a path."
-				end
-			end
-		when QuotedPathExpr
-			$1
-		when SomeonesHomePageExpr
-			someone = $1
-			unless (someone =~ /nonexistant/)
-				member_path(Member.find_by_name(someone))
-			else
-				Member.find_by_name('Nobody Special').destroy if Member.exists?(:name => 'Nobody Special')
-				'members/nobody_special'
-			end
-		else
-			page_name
-		end
-	end
+  # Maps a name to a path. Used by the
+  #
+  #   When /^I go to (.+)$/ do |page_name|
+  #
+  # step definition in web_steps.rb
+  #
+  def path_to(page_name)
+    case page_name
 
-	def template_called(page_name)
-		case page_name
-		when ResourceExpr
-			template_for($1, $2)
-		when ActionOnResourceExpr
-			action_template_for($1, $2, $3)
-		when TheSomethingPageExpr
-			case $1
-			when /home/
-				"index"
-			when /booking/
-				'book/index'
-			when /next concert/
-				'concerts/next'
-			when /private member list/
-				"private/rosters/show"
-			when /create-new-member/
-				"members/new"
-			when /login/
-				"sessions/new"
-			else
-				page_name
-			end
-		when SomeonesHomePageExpr
-			'members/show'
-		when SomeonesPublicPageExpr
-			'members/show'
-		when QuotedPathExpr
-			$1
-		else
-			page_name
-		end
-	end
+    when /the home\s?page/
+      root_path
 
-	private
-		ResourceExpr = /the (index|show|new|create|edit|update|destroy) (\w+) (page|form)/i
-		ActionOnResourceExpr = /(edit|create|show|destroy|update) (\w+) (.*)/
-		TheSomethingPageExpr = /the '?(.*[^'])'? (page|form)/i
-		SomeonesHomePageExpr = /(.*)'s home page/i
-		SomeonesPublicPageExpr = /(.*)'s public page/
-		QuotedPathExpr = /^'([^']*)'$/i
+    when /the list of pages/
+      admin_pages_path
 
-		def action_path_for(action, resource, id)
-			"#{resource.pluralize.gsub(" ", "_")}/#{id}/#{action}"
-		end	
+    when /the new page form/
+      new_admin_page_path
 
-		# turns 'new', 'road bikes' into 'road_bikes/new'
-		# note that it's "action resource"
-		def template_for(action, resource)
-			"#{resource.gsub(" ","_")}/#{action}"
-		end
-		
-		def action_template_for(action, resource, id)
-			"#{resource.pluralize.gsub(" ", "_")}/#{action}"
-		end
+    when /the list of users/
+      admin_users_path
+
+    when /the list of files/
+      admin_resources_path
+
+    when /the new file form/
+      new_admin_resource_path
+
+    when /the list of images/
+      admin_images_path
+
+     when /the new image form/
+      new_admin_image_path
+
+    when /the contact page/
+      new_inquiry_path
+
+    when /the contact thank you page/
+      thank_you_inquiries_path
+
+    when /the contact create page/
+      inquiries_path
+
+    when /the list of inquiries/
+      admin_inquiries_path
+
+    when /the list of spam inquiries/
+      spam_admin_inquiries_path
+
+    when /the (d|D)ashboard/
+      admin_dashboard_index_path
+
+    # Add more mappings here.
+    # Here is an example that pulls values out of the Regexp:
+    #
+    #   when /^(.*)'s profile page$/i
+    #     user_profile_path(User.find_by_login($1))
+
+    else
+      begin
+        page_name =~ /the (.*) page/
+        path_components = $1.split(/\s+/)
+        self.send(path_components.push('path').join('_').to_sym)
+      rescue Object => e
+        raise "Can't find mapping from \"#{page_name}\" to a path.\n" +
+          "Now, go and add a mapping in #{__FILE__}"
+      end
+    end
+  end
 end
 
 World(NavigationHelpers)

@@ -1,38 +1,25 @@
 ActionController::Routing::Routes.draw do |map|
-	map.resources :attached_files
+  map.filter(:locale)
 
-	# Main site links
-	map.with_options :controller => 'about' do |about|
-		about.about 'about', :action => 'index'
-		about.about_director 'about/director', :action => 'director'
-		about.history 'about/history', :action => 'history'
-		about.about_bylaws 'about/bylaws', :action => 'bylaws'
-	end
-	map.resources :news_items, :as => 'news', :only => [:index]
-	map.book 'book', :controller => 'book'
-	map.join 'join', :controller => 'join'
-	map.resources :concerts, :collection => {:next => :get, :past => :get, :upcoming => :get}
-	map.resources :members, :member => {:move_up => :put, :move_down => :put} do |member|
-		member.resource :privileges, :only => [:show], :controller => 'private/privileges'
-		member.resource :section, :only => [:update]
-	end
-	map.resources :fans, :only => [:new, :create, :destroy]
-	map.home 'home', :controller => 'home'
-	map.root :home
-	
-	# Authentication
-	map.logout '/logout', :controller => 'user_sessions', :action => 'destroy'
-	map.login '/login', :controller => 'user_sessions', :action => 'new'
-	map.resource :user_session
-	
-	# Private for Members, only accessible with a Username/Password
-	map.namespace :private do |private|
-		private.with_options(:layout => 'private') do |private|
-			private.resource :roster, :only => [:show]
-			private.resource :privileges, :only => [:edit]
-			private.resources :news_items do |news_item|
-				news_item.resources :attached_files, :only => [:new, :create, :destroy]
-			end
-		end
-	end
+  # NB: Engine routes are loaded FIRST from Rails v2.3 onward.
+  # These routes are contained within vendor/plugins/engine_name/config/routes.rb
+
+  # The priority is based upon order of creation: first created -> highest priority.
+  map.root :controller => "pages", :action => "home"
+
+  map.namespace(:admin, :path_prefix => 'refinery') do |admin|
+    admin.root :controller => 'dashboard', :action => 'index'
+  end
+
+  # Install the default routes as the lowest priority.
+  map.connect ':controller/:action/:id'
+  map.connect ':controller/:action/:id.:format'
+
+
+  map.redirect 'admin/*path', :controller => 'admin/base'
+  map.connect 'refinery/*path', :controller => 'admin/base', :action => 'error_404'
+
+  # Marketable URLs
+  map.connect '*path', :controller => 'pages', :action => 'show'
+
 end
